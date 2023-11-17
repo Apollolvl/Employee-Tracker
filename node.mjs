@@ -1,6 +1,11 @@
-require('dotenv').config();
-const mysql = require('mysql');
-const util = require('util');
+import dotenv from 'dotenv';
+dotenv.config();
+
+import mysql from 'mysql';
+
+import util from 'util';
+import inquirer from 'inquirer';
+
 
 const connection = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -110,73 +115,98 @@ function addDepartment() {
 
 function addRole() {
     inquirer
-        .prompt({
-            type: 'input',
-            name: '',
-            message: 'Enter the name of the department:'
-        })
-        prompt({
-            type: 'input',
-            name: 'departmentName',
-            message: 'Enter the name of the department:'
-        })
-        prompt({
-            type: 'input',
-            name: 'departmentName',
-            message: 'Enter the name of the department:'
-        })
-        .then(answer => {
+        .prompt([
+            {
+                type: 'input',
+                name: 'roleName',
+                message: 'What is the role:'
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'Enter the Salary:'
+            },
+            {
+                type: 'input',
+                name: 'departmentName',
+                message: 'Enter the name of the department:'
+            }
+        ])
+        .then(answers => {
             connection.query(
-                'INSERT INTO department (name) VALUES (?)',
-                [answer.departmentName],
+                'INSERT INTO Role (name, salary, department) VALUES (?, ?, ?)',
+                [answers.roleName, answers.salary, answers.departmentName],
                 (err, res) => {
                     if (err) throw err;
-                    console.log('Department added!');
+                    console.log('Role added!');
                     startApp();
                 }
             );
         });
-
 }
+
 
 function addEmployee() {
     inquirer
-        .prompt({
-            type: 'input',
-            name: 'departmentName',
-            message: 'Enter the name of the department:'
-        })
-        .then(answer => {
+        .prompt([
+            {
+                type: 'input',
+                name: 'employeeFirstName',
+                message: 'Enter the first name of the employee:'
+            },
+            {
+                type: 'input',
+                name: 'employeeLastName',
+                message: 'Enter the last name of the employee:'
+            },
+            {
+                type: 'input',
+                name: 'roleID',
+                message: 'Enter the role ID of the employee:'
+            },
+            {
+                type: 'input',
+                name: 'managerID',
+                message: 'Enter the manager ID of the employee (if applicable):'
+            }
+        ])
+        .then(answers => {
             connection.query(
-                'INSERT INTO department (name) VALUES (?)',
-                [answer.departmentName],
+                'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)',
+                [answers.employeeFirstName, answers.employeeLastName, answers.roleID, answers.managerID],
                 (err, res) => {
                     if (err) throw err;
-                    console.log('Department added!');
+                    console.log('Employee added!');
                     startApp();
                 }
             );
         });
-
 }
 
 function updateEmployeeRole() {
     inquirer
-        .prompt({
-            type: 'input',
-            name: 'departmentName',
-            message: 'Enter the name of the department:'
-        })
-        .then(answer => {
+        .prompt([
+            {
+                type: 'input',
+                name: 'employeeID',
+                message: 'Enter the ID of the employee you want to update:'
+            },
+            {
+                type: 'input',
+                name: 'newRoleID',
+                message: 'Enter the new role ID for the employee:'
+            }
+        ])
+        .then(answers => {
             connection.query(
-                'INSERT INTO department (name) VALUES (?)',
-                [answer.departmentName],
+                'UPDATE employee SET role_id = ? WHERE id = ?',
+                [answers.newRoleID, answers.employeeID],
                 (err, res) => {
                     if (err) throw err;
-                    console.log('Department added!');
+                    console.log('Employee role updated!');
                     startApp();
                 }
             );
         });
-
 }
+

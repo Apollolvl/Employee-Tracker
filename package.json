@@ -1,6 +1,13 @@
 {
   "dependencies": {
     "dotenv": "^16.3.1",
+    "esm": "^3.2.25",
+    "inquirer": "^9.2.12",
     "mysql": "^2.18.1"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-specifier-resolution=node ./node.mjs"
   }
+  
 }
