@@ -134,7 +134,7 @@ function addRole() {
         ])
         .then(answers => {
             connection.query(
-                'INSERT INTO Role (name, salary, department) VALUES (?, ?, ?)',
+                'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)',
                 [answers.roleName, answers.salary, answers.departmentName],
                 (err, res) => {
                     if (err) throw err;

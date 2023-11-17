@@ -1,7 +1,5 @@
 USE vsc7kjbne3yszzwb;
 
--- schema.sql
-
 -- Create the department table
 CREATE TABLE department (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -32,7 +30,6 @@ CREATE TABLE employee (
     FOREIGN KEY (manager_id) REFERENCES employee(id)
 );
 
--- Create additional tables and relationships as needed
 
 -- Create a table to store employee roles history
 CREATE TABLE employee_role_history (
