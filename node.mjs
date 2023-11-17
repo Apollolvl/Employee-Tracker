@@ -2,10 +2,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import mysql from 'mysql';
-
 import util from 'util';
 import inquirer from 'inquirer';
-
 
 const connection = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -15,7 +13,7 @@ const connection = mysql.createConnection({
     port: process.env.DB_PORT
 });
 
-connection.connect(err => {
+connection.connect((err) => {
     if (err) throw err;
     console.log('Connected to MySQL database');
     startApp();
@@ -38,7 +36,7 @@ function startApp() {
                 'Exit'
             ]
         })
-        .then(answer => {
+        .then((answer) => {
             switch (answer.action) {
                 case 'View all departments':
                     viewAllDepartments();
@@ -78,7 +76,7 @@ function viewAllDepartments() {
 }
 
 function viewAllRoles() {
-    connection.query('SELECT * FROM role', (err, res) => {
+    connection.query('SELECT * FROM rol', (err, res) => {
         if (err) throw err;
         console.table(res);
         startApp();
@@ -100,7 +98,7 @@ function addDepartment() {
             name: 'departmentName',
             message: 'Enter the name of the department:'
         })
-        .then(answer => {
+        .then((answer) => {
             connection.query(
                 'INSERT INTO department (name) VALUES (?)',
                 [answer.departmentName],
@@ -128,24 +126,42 @@ function addRole() {
             },
             {
                 type: 'input',
-                name: 'departmentName',
-                message: 'Enter the name of the department:'
+                name: 'departmentName', // Modify to departmentName
+                message: 'Enter the department name:'
             }
         ])
-        .then(answers => {
+        .then((answers) => {
+            // Check if the department with the given name exists
             connection.query(
-                'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)',
-                [answers.roleName, answers.salary, answers.departmentName],
-                (err, res) => {
+                'SELECT id FROM department WHERE name = ?',
+                [answers.departmentName],
+                (err, result) => {
                     if (err) throw err;
-                    console.log('Role added!');
-                    startApp();
+
+                    if (result.length === 0) {
+                        // Department not found, handle accordingly
+                        console.log('Error: Department not found');
+                        startApp();
+                    } else {
+                        // Department found, insert the role
+                        const departmentId = result[0].id;
+                        connection.query(
+                            'INSERT INTO rol (title, salary, department_id) VALUES (?, ?, ?)',
+                            [answers.roleName, answers.salary, departmentId],
+                            (err, res) => {
+                                if (err) throw err;
+                                console.log('Role added!');
+                                startApp();
+                            }
+                        );
+                    }
                 }
             );
         });
 }
 
 
+// Update addEmployee function
 function addEmployee() {
     inquirer
         .prompt([
@@ -161,46 +177,73 @@ function addEmployee() {
             },
             {
                 type: 'input',
-                name: 'roleID',
-                message: 'Enter the role ID of the employee:'
+                name: 'roleName',
+                message: 'Enter the role name of the employee:'
             },
             {
                 type: 'input',
-                name: 'managerID',
+                name: 'managerId',
                 message: 'Enter the manager ID of the employee (if applicable):'
             }
         ])
-        .then(answers => {
+        .then((answers) => {
+            // Check if the role with the given name exists
             connection.query(
-                'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)',
-                [answers.employeeFirstName, answers.employeeLastName, answers.roleID, answers.managerID],
-                (err, res) => {
+                'SELECT id FROM rol WHERE title = ?',
+                [answers.roleName],
+                (err, result) => {
                     if (err) throw err;
-                    console.log('Employee added!');
-                    startApp();
+
+                    if (result.length === 0) {
+                        // Role not found, handle accordingly
+                        console.log('Error: Role not found');
+                        startApp();
+                    } else {
+                        // Role found, insert the employee
+                        const roleId = result[0].id;
+
+                        // Validate managerId
+                        const managerId = parseInt(answers.managerId) || null;
+
+                        connection.query(
+                            'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)',
+                            [
+                                answers.employeeFirstName,
+                                answers.employeeLastName,
+                                roleId,
+                                managerId,
+                            ],
+                            (err, res) => {
+                                if (err) throw err;
+                                console.log('Employee added!');
+                                startApp();
+                            }
+                        );
+                    }
                 }
             );
         });
 }
+
 
 function updateEmployeeRole() {
     inquirer
         .prompt([
             {
                 type: 'input',
-                name: 'employeeID',
+                name: 'employeeId',
                 message: 'Enter the ID of the employee you want to update:'
             },
             {
                 type: 'input',
-                name: 'newRoleID',
+                name: 'newRoleId',
                 message: 'Enter the new role ID for the employee:'
             }
         ])
-        .then(answers => {
+        .then((answers) => {
             connection.query(
                 'UPDATE employee SET role_id = ? WHERE id = ?',
-                [answers.newRoleID, answers.employeeID],
+                [answers.newRoleId, answers.employeeId],
                 (err, res) => {
                     if (err) throw err;
                     console.log('Employee role updated!');
@@ -209,4 +252,3 @@ function updateEmployeeRole() {
             );
         });
 }
-
